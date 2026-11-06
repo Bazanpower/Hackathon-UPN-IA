@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS vecinos (phone TEXT PRIMARY KEY, nombre TEXT, dni TEXT, lat DOUBLE PRECISION, lng DOUBLE PRECISION, ubic_at TIMESTAMPTZ, reputacion INT DEFAULT 0, created_at TIMESTAMPTZ DEFAULT now());
+CREATE TABLE IF NOT EXISTS alertas (id SERIAL PRIMARY KEY, phone TEXT, tipo TEXT, gravedad INT, descripcion TEXT, lugar_texto TEXT, lat DOUBLE PRECISION, lng DOUBLE PRECISION, vulnerables TEXT, evidencia JSONB, media JSONB, credibilidad INT, razones JSONB, estado TEXT, entidad TEXT, simulado BOOL DEFAULT false, created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ DEFAULT now());
+CREATE TABLE IF NOT EXISTS confirmaciones (id SERIAL PRIMARY KEY, alerta_id INT REFERENCES alertas(id), phone TEXT, respuesta TEXT CHECK (respuesta IN ('si','no')), created_at TIMESTAMPTZ DEFAULT now(), UNIQUE(alerta_id,phone));
+CREATE TABLE IF NOT EXISTS pedidos_confirmacion (alerta_id INT REFERENCES alertas(id), phone TEXT, enviado_at TIMESTAMPTZ DEFAULT now(), PRIMARY KEY(alerta_id,phone));
+CREATE TABLE IF NOT EXISTS anuncios (id SERIAL PRIMARY KEY, texto TEXT, lat DOUBLE PRECISION, lng DOUBLE PRECISION, radio_m INT, enviados INT, simulado BOOL, created_at TIMESTAMPTZ DEFAULT now());
+CREATE TABLE IF NOT EXISTS bitacora (id SERIAL PRIMARY KEY, alerta_id INT REFERENCES alertas(id), evento TEXT, detalle JSONB, at TIMESTAMPTZ DEFAULT now());
+CREATE TABLE IF NOT EXISTS media (id SERIAL PRIMARY KEY, alerta_id INT REFERENCES alertas(id), phone TEXT, mime TEXT, path TEXT, created_at TIMESTAMPTZ DEFAULT now());

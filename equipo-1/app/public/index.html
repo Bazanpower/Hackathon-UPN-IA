@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AYUDA IA · ¡Ayuda ya!</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4C20 20 12 30 12 40a20 20 0 0 0 40 0C52 30 44 20 32 4z' fill='%230B3D91'/%3E%3Cpath d='M23 40l6 6 12-13' stroke='%23FF6B1A' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#0A1220;--panel:#111B2E;--card:#16223A;--line:#24324F;--blue:#0B3D91;--blue2:#2F6BFF;--orange:#FF6B1A;--yellow:#FFD23F;--green:#1DB954;--purple:#7B3FE4;--gray:#7D8BA6;--text:#F3F6FC;--muted:#9AA8C3}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#13254a 0%,transparent 60%),var(--bg);color:var(--text);font:16px/1.4 Inter,system-ui,sans-serif;overflow:hidden}
+.app{display:grid;grid-template-rows:auto 1fr auto;height:100vh}
+/* HEADER */
+header{display:grid;grid-template-columns:auto 1fr auto;gap:22px;align-items:center;padding:14px 22px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0f1a30,#0c1526)}
+.brand{display:flex;align-items:center;gap:14px}
+.brand svg{width:56px;height:56px;filter:drop-shadow(0 6px 18px rgba(47,107,255,.45))}
+.brand h1{font:900 38px/1 Montserrat,sans-serif;margin:0;letter-spacing:.5px}
+.brand h1 b{color:var(--orange)}
+.brand p{margin:4px 0 0;color:var(--muted);font-weight:600;letter-spacing:.3px}
+.live{display:inline-flex;align-items:center;gap:7px;margin-left:10px;padding:3px 10px;border-radius:99px;background:rgba(29,185,84,.12);color:#5BE38A;font:700 12px Inter;letter-spacing:1px;vertical-align:middle}
+.live i{width:8px;height:8px;border-radius:50%;background:#5BE38A;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.25}}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 16px;position:relative;overflow:hidden}
+.kpi:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--c)}
+.kpi span{display:block;color:var(--muted);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.8px}
+.kpi strong{font:800 34px/1.1 Montserrat,sans-serif}
+.kpi.pop strong{animation:pop .5s}
+.qrbox{display:flex;align-items:center;gap:12px;background:#fff;color:#0A1220;border-radius:16px;padding:8px 14px 8px 8px}
+.qrbox #qr img{display:block;width:132px;height:132px;image-rendering:pixelated}
+.qrbox p{margin:0;font:800 16px/1.2 Montserrat;max-width:150px}
+.qrbox small{display:block;margin-top:6px;font:600 12px Inter;color:#3b4a66}
+/* MAIN */
+main{display:grid;grid-template-columns:minmax(0,65fr) minmax(360px,35fr);min-height:0}
+.mapwrap{position:relative;min-height:0}
+#map{position:absolute;inset:0;background:#0d1626}
+.toolbar{position:absolute;z-index:500;top:14px;left:56px;display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:rgba(17,27,46,.88);backdrop-filter:blur(8px);color:var(--text);padding:10px 16px;border-radius:12px;font:700 14px Inter;cursor:pointer;transition:.2s}
+.btn:hover{border-color:var(--blue2);transform:translateY(-1px)}
+.btn.primary{background:var(--orange);border-color:var(--orange);color:#fff}
+.legend{position:absolute;z-index:500;bottom:16px;left:16px;background:rgba(17,27,46,.9);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;padding:10px 14px;font-size:13px;display:grid;gap:5px}
+.legend div{display:flex;align-items:center;gap:8px}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.heatbar{height:8px;width:150px;border-radius:9px;background:linear-gradient(90deg,#0B3D91,#FF6B1A,#FFD23F,#fff)}
+.leaflet-container{font-family:Inter}
+.leaflet-popup-content-wrapper{background:var(--card);color:var(--text);border-radius:12px}
+.leaflet-popup-tip{background:var(--card)}
+.pulse{width:22px;height:22px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 0 rgba(255,210,63,.7);animation:pulse 1.6s infinite;border:3px solid #fff}
+@keyframes pulse{70%{box-shadow:0 0 0 22px rgba(255,210,63,0)}100%{box-shadow:0 0 0 0 rgba(255,210,63,0)}}
+/* FEED */
+.feed{border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:0}
+.feedhead{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.feedhead h2{margin:0;font:800 20px Montserrat}
+.feedhead small{color:var(--muted)}
+#feed{overflow:auto;padding:14px;display:grid;gap:12px;align-content:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;transition:.3s;animation:enter .5s ease}
+.card.real{border-color:rgba(255,107,26,.55);box-shadow:0 10px 30px rgba(255,107,26,.12)}
+.card.sim{opacity:.62}
+.card.despachada{border-color:rgba(29,185,84,.7)}
+.card.descartada{opacity:.55}
+@keyframes enter{from{transform:translateY(-10px);opacity:0}}
+.ctop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.ctitle{font:800 19px Montserrat;display:flex;gap:8px;align-items:center;text-transform:capitalize}
+.ctitle .ico{font-size:24px}
+.badge{font:800 11px Inter;letter-spacing:.8px;padding:4px 9px;border-radius:99px;text-transform:uppercase;white-space:nowrap}
+.b-nueva{background:#2a3550;color:#c8d2e8}.b-verificando{background:rgba(255,210,63,.15);color:var(--yellow)}.b-despachada{background:rgba(29,185,84,.16);color:#5BE38A}.b-descartada{background:#2a2f3a;color:#9aa3b5}.b-pide_evidencia{background:rgba(47,107,255,.16);color:#8fb0ff}
+.simtag{background:rgba(255,210,63,.12);color:var(--yellow);font:800 10px Inter;padding:3px 7px;border-radius:6px;letter-spacing:.8px;margin-left:6px}
+.cbody{display:grid;grid-template-columns:auto 1fr;gap:12px;margin-top:10px}
+.cbody img{width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+.desc{margin:0;font-size:15px}
+.desc em{color:var(--muted)}
+.score{display:flex;align-items:baseline;gap:8px;margin-top:12px}
+.score strong{font:900 36px/1 Montserrat}
+.score span{color:var(--muted);font-weight:600}
+.bar{height:10px;border-radius:9px;background:#0d1626;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:9px;transition:width .8s cubic-bezier(.2,.8,.2,1),background .8s}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font:600 12px Inter;padding:4px 8px;border-radius:8px;background:#0f1930;border:1px solid var(--line)}
+.chip.pos{color:#7ff0a6}.chip.neg{color:#ff9b9b}
+.votes{display:flex;gap:10px;margin-top:10px}
+.vote{flex:1;text-align:center;border-radius:12px;padding:6px;background:#0f1930;border:1px solid var(--line);font:800 22px Montserrat}
+.vote small{display:block;font:700 11px Inter;color:var(--muted);letter-spacing:.8px}
+.vote.pop{animation:pop .5s}
+@keyframes pop{40%{transform:scale(1.18)}}
+.meta{display:flex;justify-content:space-between;gap:8px;margin-top:10px;color:var(--muted);font-size:13px}
+.entity{color:#5BE38A;font-weight:700}
+details{margin-top:8px;color:var(--muted);font-size:13px}details p{margin:3px 0}
+summary{cursor:pointer;font-weight:600}
+.empty{color:var(--muted);text-align:center;padding:30px}
+/* FOOTER + TOAST */
+footer{padding:8px 22px;background:#3a2a0e;color:#ffd99b;font:600 13px Inter;text-align:center;border-top:1px solid #5a4214}
+#toasts{position:fixed;z-index:1000;top:110px;left:50%;transform:translateX(-50%);display:grid;gap:10px;pointer-events:none}
+.toast{min-width:520px;padding:18px 26px;border-radius:18px;font:800 22px Montserrat;color:#fff;box-shadow:0 20px 50px rgba(0,0,0,.5);animation:tin .4s ease,tout .5s ease 5.5s forwards;display:flex;gap:14px;align-items:center}
+.toast.ok{background:linear-gradient(135deg,#169c46,#1DB954)}.toast.no{background:linear-gradient(135deg,#3a4256,#566079)}.toast.new{background:linear-gradient(135deg,#e2560e,#FF6B1A)}.toast.risk{background:linear-gradient(135deg,#5b2bb3,#7B3FE4)}
+@keyframes tin{from{transform:translateY(-20px);opacity:0}}@keyframes tout{to{transform:translateY(-20px);opacity:0}}
+@media(max-width:1100px){body{overflow-x:hidden;overflow-y:auto}header{grid-template-columns:1fr;gap:12px}.kpis{grid-template-columns:repeat(2,1fr)}.app{height:auto;min-height:100vh}main{grid-template-columns:1fr}.mapwrap{height:65vh}.feed{border-left:0}#feed{overflow:visible}.toast{min-width:0;width:90vw;font-size:18px}.toolbar{left:12px;right:12px}.btn{padding:8px 12px;font-size:13px}.brand h1{font-size:30px}.qrbox{justify-self:start}}@media(max-width:700px){.qrbox{display:none}.legend{display:none}.kpi strong{font-size:26px}}
+</style>
+<link rel="stylesheet" href="/operaciones.css">
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2F6BFF"/><stop offset="1" stop-color="#0B3D91"/></linearGradient></defs><path d="M32 3C19 20 11 30 11 41a21 21 0 0 0 42 0C53 30 45 20 32 3z" fill="url(#g)"/><path d="M22 41l7 7 13-15" stroke="#FF6B1A" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div><h1>AYUDA <b>IA</b> <span class="live"><i></i>EN VIVO</span></h1><p>¡Ayuda ya! · Escucha. Verifica. Ayuda.</p></div>
+  </div>
+  <div class="kpis">
+    <div class="kpi" id="k1" style="--c:var(--orange)"><span>Alertas</span><strong id="kAlertas">0</strong></div>
+    <div class="kpi" id="k2" style="--c:var(--green)"><span>Verificadas</span><strong id="kVer">0</strong></div>
+    <div class="kpi" id="k3" style="--c:var(--gray)"><span>Descartadas</span><strong id="kDes">0</strong></div>
+    <div class="kpi" id="k4" style="--c:var(--blue2)"><span>Vecinos conectados</span><strong id="kVec">0</strong></div>
+  </div>
+  <a class="qrbox" id="wa" target="_blank" rel="noopener"><span id="qr"></span><p>Escanea y escribe <span style="color:#FF6B1A">HOLA</span><small>Luego comparte tu ubicación 📍</small></p></a>
+</header>
+<main>
+  <div class="mapwrap">
+    <div id="map"></div>
+    <div class="maplabel"><span>01 / MONITOREO TERRITORIAL</span><strong>Mapa de alertas</strong></div>
+    <div class="toolbar">
+      <button class="btn" onclick="verPiura()">🗺️ Ver Piura <small>(simulado)</small></button>
+      <button class="btn" onclick="verSala()">📍 Ver salón (en vivo)</button>
+      <button class="btn primary" onclick="anunciar()">📣 Anuncio por zona</button>
+    </div>
+    <div class="legend">
+      <div><span class="dot" style="background:#FFD23F"></span>Verificando con vecinos</div>
+      <div><span class="dot" style="background:#FF6B1A"></span>Verificada y enviada</div>
+      <div><span class="dot" style="background:#7B3FE4"></span>Riesgo de dengue (regla)</div>
+      <div><span class="dot" style="background:#7D8BA6"></span>Nueva / descartada</div>
+      <div><span class="heatbar"></span>&nbsp;Concentración de alertas</div>
+    </div>
+  </div>
+  <aside class="feed">
+    <div class="feedhead"><div><span class="section-kicker">CENTRO DE OPERACIONES / 01</span><h2>Alertas en tiempo real</h2></div><small id="clock"></small></div>
+    <div class="feedtools"><label for="filtroAlertas">Mostrar</label><select id="filtroAlertas"><option value="todas">Todas las alertas</option><option value="reales">Reportes reales</option><option value="verificando">En verificación</option><option value="despachada">Verificadas</option><option value="simuladas">Simuladas</option></select><span id="conteoFiltro" aria-live="polite"></span></div>
+    <section id="feed"><div class="empty">Esperando alertas…</div></section>
+  </aside>
+</main>
+<footer>Prototipo de hackathon. No reemplaza alertas oficiales (INDECI, Senamhi, Minsa) ni las líneas 116 · 105 · 106. Conectores a entidades marcados SIMULADO.</footer>
+</div>
+<div id="toasts" role="status" aria-live="polite"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="/qrcode.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+node_modules/
+app/.env
+app/data/media/
+n8n/backup-demoteva-ANTES.json
+n8n/ayudaia-final.json

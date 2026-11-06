@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  ayudaia:
+    image: ayudaia:revision9
+    environment:
+      PORT: '3000'
+      DATABASE_URL: '${DATABASE_URL}'
+      N8N_SHARED_SECRET: '${N8N_SHARED_SECRET}'
+      EVOLUTION_URL: '${EVOLUTION_URL}'
+      EVOLUTION_APIKEY: '${EVOLUTION_APIKEY}'
+      EVOLUTION_INSTANCE: 'IA'
+      WA_NUMBER: '${WA_NUMBER}'
+      DEMO_RADIUS_M: '300'
+      DEMO_WINDOW_MIN: '30'
+      MAX_CONFIRM_REQUESTS: '15'
+      SIN_AGUA_HORAS_DENGUE: '48'
+      SIN_AGUA_MINUTOS_DENGUE_DEMO: '2'
+    volumes:
+      - ayudaia_media:/app/data/media
+    networks:
+      - Tecmastersia
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=Tecmastersia
+        - 'traefik.http.routers.ayudaia.rule=Host(`ayudaia.crm-ia.org`)'
+        - traefik.http.routers.ayudaia.entrypoints=websecure
+        - traefik.http.routers.ayudaia.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.ayudaia.service=ayudaia
+        - traefik.http.services.ayudaia.loadbalancer.server.port=3000
+volumes:
+  ayudaia_media:
+networks:
+  Tecmastersia:
+    external: true
+    name: Tecmastersia
