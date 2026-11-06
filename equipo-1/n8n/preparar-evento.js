@@ -1,4 +1,5 @@
 const b=$('Normalizar Evolution IA').item.json.body;const x={phone:b.sender.phone_number,nombre:b.sender.name,tipo_mensaje:b.tipo_mensaje,texto:b.content,lat:b.lat,lng:b.lng,ia:$json.ia};
+if(b.tipo_mensaje==='text' && /^(?:hola|buenas|buenos d[ií]as|buenas tardes|buenas noches|hey|holi)[\s.!¡¿?]*$/i.test(b.content.trim()))x.ia={...x.ia,intencion:'registro',confirmacion:null};
 if(b.tipo_mensaje==='audio')x.texto=$('Transcribe a recording').item.json.text;
 if(b.tipo_mensaje==='image'){
  const m=$('Recuperar imagen Evolution').item.json.data;x.media={mime:m.mimetype||'image/jpeg',base64:m.base64};

@@ -49,3 +49,9 @@
 - Riesgo inmediato (gravedad 5): prioridad sin esperar votos, registro de derivación simulada y orientación a 116/105/106. Las ubicaciones posteriores se incorporan a la alerta.
 - Pruebas: prioridad con y sin ubicación, integración de nueve pedidos/tres votos/dengue y tablero en navegadores de 1440 y 390 px. Tablero público responde HTTP 200.
 - Los conectores a entidades no envían avisos reales; se identifican como simulados en la respuesta y el tablero. Los números locales no se presentan como los más cercanos sin una verificación geográfica.
+
+## 2026-11-06 18:26 PET — Contexto y conversación
+- Revisión de interacciones: un saludo se clasificó como inundación por mezclar mensajes y memoria anterior; respuestas de registro eran rígidas y la memoria guardaba JSON en vez de la respuesta enviada.
+- Corrección: memoria por remitente; cola Redis aislada por mensaje y limpiada tras su lectura; historial de los 20 mensajes recientes; registro de la respuesta real; saludos aislados no abren una alerta; incidentes distintos no se fusionan.
+- Pruebas locales: saludo, usuario diferente, ubicación, reportes distintos, consulta, confirmación sin solicitud y peligro inmediato; integración con Evolution simulado. Verificación estructural del workflow activo y HTTP de la app. Falta prueba de una conversación real nueva posterior al despliegue.
+- Nota: no se migró la memoria histórica compartida del grupo a identidades individuales, porque no se puede atribuir de forma segura a cada participante.
